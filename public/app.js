@@ -87,7 +87,7 @@ async function initLoc(){if(me.lat!=null||me.role=='admin')return;let la=CFG.cen
 const geo=()=>navigator.geolocation?.getCurrentPosition(p=>setLoc(p.coords.latitude,p.coords.longitude),()=>toast('Location permission denied',1));
 const pin=c=>L.divIcon({className:'',html:`<div class="pin ${c}"></div>`,iconSize:[18,18],iconAnchor:[9,9]});
 function drawMap(){const el=$('map');if(me.lat==null)return;map=L.map(el).setView([me.lat,me.lng],ui.rad>20?10:13);
- L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO',maxZoom:19}).addTo(map);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',maxZoom:19}).addTo(map);
  const you=L.marker([me.lat,me.lng],{draggable:true,icon:pin('you')}).addTo(map).bindTooltip('You — drag to move');
  you.on('dragend',e=>{const p=e.target.getLatLng();setLoc(p.lat,p.lng)});map.on('click',e=>setLoc(e.latlng.lat,e.latlng.lng));
  if(view=='find'){const c=L.circle([me.lat,me.lng],{radius:ui.rad*1000,color:'#ff6b4a',weight:2,fillOpacity:.08}).addTo(map);
