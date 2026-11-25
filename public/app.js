@@ -1,8 +1,10 @@
 const CFG={center:[17.385,78.4867]};
 const $=i=>document.getElementById(i),E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const SUBJ=['Maths','Physics','Chemistry','Biology','English','Computer Science'],today=new Date().toISOString().slice(0,10);
+const SUBJ=['Maths','Physics','Chemistry','Biology','English','Computer Science'];
+const localDate=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10)};
+const today=localDate(new Date());
 const MODES=['home','online','hybrid'];
-let me=null,S={},ui={mode:'in',rad:12,subj:'',q:'',sort:'near',m:0,d:today,r:'student',chat:null,theme:localStorage.getItem('htf_theme')||'dark'},map,view='',dirty=0;
+let me=null,S={},ui={mode:'in',rad:12,subj:'',q:'',sort:'near',m:0,d:today,r:'student',chat:null,theme:(()=>{try{return localStorage.getItem('htf_theme')||'dark'}catch(e){return'dark'}})()},map,view='',dirty=0;
 document.documentElement.dataset.theme=ui.theme==='light'?'light':'dark';
 const NAV={
   student:[['home','Home'],['find','Find tutors'],['tutors','My tutors'],['book','Bookings'],['chat','Chat'],['hw','Homework'],['quizzes','Quizzes'],['progress','Progress'],['cal','Calendar']],
@@ -18,7 +20,7 @@ const rating=t=>{const r=S.reviews.filter(x=>x.teacher_id==t);return r.length?(r
 const ratingLabel=t=>{const n=rating(t),c=S.reviews.filter(x=>x.teacher_id==t).length;return n?`${n}★ (${c})`:'New tutor'};
 const pct=(t,s)=>{const a=S.attendance.filter(x=>x.teacher_id==t&&x.student_id==s);return a.length?Math.round(a.filter(x=>x.present).length/a.length*100):null};
 const qavg=(t,s)=>{const a=S.attempts.filter(x=>x.student_id==s&&x.status=='graded'&&S.quizzes.find(q=>q.id==x.quiz_id)?.teacher_id==t);return a.length?Math.round(a.reduce((p,x)=>p+x.mark/x.max*100,0)/a.length):null};
-const months=()=>[...Array(6)].map((_,i)=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);return d.toISOString().slice(0,7)});
+const months=()=>[...Array(6)].map((_,i)=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);return localDate(d).slice(0,7)});
 const paid=(t,s,m)=>S.fees.some(f=>f.teacher_id==t&&f.student_id==s&&f.month==m);
 const bar=v=>`<div class="bar"><i style="width:${v||0}%"></i></div>`;
 const ini=n=>(n||'?').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
@@ -104,9 +106,9 @@ function shell(){const u=unread();
  <div class="nav">${NAV[me.role].map(n=>`<button class="s ${view==n[0]?'on':''}" onclick="go('${n[0]}')">${n[1]}${n[0]=='chat'&&u?`<span class="unread">${u}</span>`:''}</button>`).join('')}</div>
  ${V[view]()}`}
 
-function calendar(tids){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+ui.m);const ym=d.toISOString().slice(0,7),n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(),hs=S.holidays.filter(h=>tids.includes(h.teacher_id)&&h.date.startsWith(ym));
+function calendar(tids){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+ui.m);const ym=localDate(d).slice(0,7),n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(),hs=S.holidays.filter(h=>tids.includes(h.teacher_id)&&h.date.startsWith(ym));
  const books=(S.bookings||[]).filter(b=>tids.includes(b.teacher_id)&&b.date.startsWith(ym)&&b.status!='declined'&&b.status!='cancelled');
- return`<div class="row"><button class="s" onclick="ui.m--;R(1)">‹</button><b>${d.toLocaleString('en',{month:'long',year:'numeric'})}</b><button class="s" onclick="ui.m++;R(1)">›</button></div><br><div class="cal">${['S','M','T','W','T','F','S'].map(x=>`<b>${x}</b>`).join('')}${'<span></span>'.repeat(d.getDay())}${[...Array(n)].map((_,i)=>{const ds=ym+'-'+String(i+1).padStart(2,'0'),h=hs.filter(x=>x.date==ds),bk=books.filter(x=>x.date==ds);return`<div class="${h.length||bk.length?'h':''}">${i+1}${h.map(x=>`<br>${E(x.name)}`).join('')}${bk.map(x=>`<br>🕒 ${x.time}`).join('')}</div>`).join('')}</div>`}
+ return`<div class="row"><button class="s" onclick="ui.m--;R(1)">‹</button><b>${d.toLocaleString('en',{month:'long',year:'numeric'})}</b><button class="s" onclick="ui.m++;R(1)">›</button></div><br><div class="cal">${['S','M','T','W','T','F','S'].map(x=>`<b>${x}</b>`).join('')}${'<span></span>'.repeat(d.getDay())}${[...Array(n)].map((_,i)=>{const ds=ym+'-'+String(i+1).padStart(2,'0'),h=hs.filter(x=>x.date==ds),bk=books.filter(x=>x.date==ds);return`<div class="${h.length||bk.length?'h':''}">${i+1}${h.map(x=>`<br>${E(x.name)}`).join('')}${bk.map(x=>`<br>🕒 ${x.time}`).join('')}</div>`}).join('')}</div>`}
 
 const addTut=()=>{const L=S.profiles.filter(u=>u.role=='teacher'&&!u.blocked&&!S.requests.some(r=>r.student_id==me.id&&r.teacher_id==u.id&&r.status!='rejected'));return`<div class="card"><b>Add any tutor</b> <span class="mu">(any distance — sends a request)</span><div class="row"><select id="at" style="flex:1"><option value="">Select tutor…</option>${L.map(u=>`<option value="${u.id}">${E(u.name)} · ${E(u.subject)}</option>`).join('')}</select><button onclick="const v=$('at').value;v?sendReq(v):toast('Select a tutor',1)">Add</button></div></div>`};
 const addStu=()=>{const ids=acc().map(r=>r.student_id),L=S.profiles.filter(u=>u.role=='student'&&!u.blocked&&!ids.includes(u.id));return`<div class="card"><b>Add any student to your tuition</b><div class="row"><select id="as" style="flex:1"><option value="">Select student…</option>${L.map(u=>`<option value="${u.id}">${E(u.name)} (${E(u.email)})</option>`).join('')}</select><button onclick="const v=$('as').value;v?enroll(v):toast('Select a student',1)">Add</button></div></div>`};
