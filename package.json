@@ -1,1 +1,1 @@
-{"name":"home-tutor-finder","version":"3.0.0","private":true,"scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
+{"name":"home-tutor-finder","version":"4.0.0","private":true,"scripts":{"start":"node server.js"},"engines":{"node":">=18"}}

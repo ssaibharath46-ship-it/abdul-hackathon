@@ -1,23 +1,28 @@
-# Home Tutor Finder — deploy on Vercel via Git (no Supabase)
+# Lumina Tutors — Home Tutor Finder
 
-Student / Teacher / Admin app with a real OpenStreetMap map, live updates (auto-refresh every 4 s), quizzes + evaluation,
-progress reports, attendance, monthly fees, holiday calendar and an admin login monitor.
+Student / Teacher / Admin app with a live OpenStreetMap, class bookings, chat, homework, quizzes, attendance, fees, holiday calendar and an admin login monitor.
 
-## Deploy (GitHub -> Vercel)
-1. `git init && git add . && git commit -m "Home Tutor Finder"` then push to a GitHub repo.
-2. vercel.com > Add New > Project > import the repo. Leave all build settings empty (Framework: Other). Deploy.
-3. **Add storage (required on Vercel):** Vercel serverless functions cannot keep files, so data lives in a free Redis store.
-   Project > Storage > Create / Marketplace > **Upstash Redis** (free plan) > connect it to the project.
-   This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically.
-4. Project > Settings > Environment Variables: add `ADMIN_EMAIL` and `ADMIN_PASSWORD` (before first use), then Redeploy.
-5. Open the site, sign in as that admin. Admin tab shows all accounts, last login, login count and live login activity
-   (time, email, success/failed, IP, device); block, reset password or remove users.
+## Demo accounts (password `demo123`)
+- Student: `aisha@htf.com`
+- Tutor: `priya@htf.com`
+- Admin: `admin@htf.com` / `admin123`
+
+## What it does
+- Find tutors on a real map (radius, subject, search, sort by distance / fee / rating)
+- Send requests, enrol, rate tutors, favourite them
+- Book class slots (accept / decline / complete)
+- In-app chat between connected students and teachers
+- Homework assign + mark done
+- Quizzes with auto-score + teacher evaluation
+- Attendance, monthly fees, progress reports, holiday calendar
+- Live updates every 4s while the tab is visible
+- Admin: accounts, last login, login activity, block / reset / remove
+
+## Deploy (GitHub → Vercel)
+1. Push this repo to GitHub.
+2. vercel.com → Add New → Project → import. Framework: Other. Leave build empty.
+3. **Storage:** Project → Storage → Upstash Redis (free) so data persists on serverless. This sets `KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+4. Environment: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, then Redeploy.
 
 ## Run locally
-`node server.js` -> http://localhost:3000 (stores data in data.json; default admin admin@htf.com / admin123).
-
-## Notes
-- Live updates use light polling (only while the tab is visible), so it works on serverless. Free Upstash limits are plenty for a tuition centre.
-- All data is one JSON document in Redis (~1 MB free-plan request limit). Fine for hundreds of users; for thousands move to a SQL database.
-- Two people saving at the exact same instant: last write wins (rare at this scale).
-- Passwords are stored hashed (scrypt); admin can reset but never read them. Quiz answers are never sent to students.
+`node server.js` → http://localhost:3000 (stores `data.json`). Delete `data.json` once if you want the demo tutors re-seeded.
